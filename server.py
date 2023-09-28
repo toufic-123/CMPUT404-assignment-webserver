@@ -1,5 +1,6 @@
 #  coding: utf-8 
 import socketserver
+import os
 
 # Copyright 2013 Abram Hindle, Eddie Antonio Santos
 # 
@@ -28,11 +29,74 @@ import socketserver
 
 
 class MyWebServer(socketserver.BaseRequestHandler):
+
+    OKSTATUS = "HTTP/1.1 200 OK\r\n"
+    MOVEDSTATUS = "HTTP/1.1 301 Moved Permanently\r\n"
+    NOTFOUNDSTATUS = "HTTP/1.1 404 Not Found\r\n"
+    NOTALLOWEDSTATUS = "HTTP/1.1 405 Method Not Allowed\r\n\r\n"
     
+    def splitRequest(self, requestStr):
+        # get the request method
+        splitRequest = str(requestStr).split("b'")
+        requestSplitBySpace = splitRequest[1].split(" ")
+        # print(requestSplitBySpace)
+        #requestMethod = requestSplitBySpace[0]
+        return requestSplitBySpace
+    
+
+    def checkPath(self, path):
+        print(os.path.exists(path))
+        return os.path.exists(path)
+    
+
+    def readFileContents(self, path):
+        
+        file = open(path, "r")
+        while True:
+            bytesRead = file.read()
+            print(bytesRead)
+            if not bytesRead:
+                break
+        return bytearray(bytesRead, 'utf-8')
+            
+
     def handle(self):
         self.data = self.request.recv(1024).strip()
         print ("Got a request of: %s\n" % self.data)
-        self.request.sendall(bytearray("OK",'utf-8'))
+        
+        # get the request method
+        splitRequest = self.splitRequest(self.data)
+        requestMethod = splitRequest[0]
+        print(splitRequest)
+
+        # check for get request
+        if requestMethod == "GET":
+            # print(requestMethod)
+
+            
+            # get the file name
+            filename = str(splitRequest[1])
+
+            # check for a valid path
+            if (self.checkPath("./www" + filename)):
+                path = "./www" + filename
+
+                # if root directory then redirect to index.html
+                if (path.endswith("/") and self.checkPath(path + "index.html")):
+                    path += "index.html"
+                
+                if (path.endswith(".css")):
+                    contentType = "css"
+                elif (path.endswith(".html")):
+                    contentType = "html"
+                
+                fileContents = self.readFileContents(path)
+                # print(os.path.getsize("./www"+filename))
+            
+                self.request.sendall(bytearray(self.OKSTATUS + "Content-Type: text/"+contentType+"\r\n\r\n" + str(fileContents),'utf-8'))
+            else:
+                self.request.sendall(bytearray(self.NOTFOUNDSTATUS,'utf-8'))
+
 
 if __name__ == "__main__":
     HOST, PORT = "localhost", 8080
