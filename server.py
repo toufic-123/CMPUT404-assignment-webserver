@@ -60,9 +60,6 @@ class MyWebServer(socketserver.BaseRequestHandler):
         file = open(path, "r")
         with open(path, 'r') as file:
             bytesRead = file.read()
-        print("error--------------------------------")
-        print(bytesRead)
-        print(type(bytesRead))
         return bytesRead
             
 
@@ -75,14 +72,13 @@ class MyWebServer(socketserver.BaseRequestHandler):
             
         
 
-            # print(currentDir)
             self.data = self.request.recv(1024).strip()
             print ("Got a request of: %s\n" % self.data)
             
             # get the request method
             splitRequest = self.splitRequest(self.data)
             requestMethod = splitRequest[0]
-            print(splitRequest)
+            # print(splitRequest)
 
             # check for get request
             if requestMethod == "GET":
@@ -95,7 +91,6 @@ class MyWebServer(socketserver.BaseRequestHandler):
                 # check if is is a directory and does not end in /
                 
             
-                print(current_directory + "/www" + filename)  
                 # check for a valid path
                 if (self.checkPath(current_directory + "/www" + filename)):
                     path = current_directory + "/www" + filename
@@ -103,14 +98,14 @@ class MyWebServer(socketserver.BaseRequestHandler):
                     # if root directory then redirect to index.html
                     if (path.endswith("/") and self.checkPath(path + "index.html")):
                         path += "index.html"
-                        print(path)
+                        # print(path)
                     elif (not path.endswith("/") and os.path.isdir(path)):
                     # send 301 response code with new location header
                         print("sending 301")
                         self.request.sendall(bytearray(self.MOVEDSTATUS,'utf-8'))
                         return
 
-                    print(path[-1])
+                    
                     contentType = ""
                     if (path.endswith(".css")):
                         contentType = "css"
@@ -120,14 +115,14 @@ class MyWebServer(socketserver.BaseRequestHandler):
                         self.request.sendall(bytearray(self.NOTFOUNDSTATUS,'utf-8'))
                         return
                     fileContents = self.readFileContents(path)
-                    print(fileContents)
+                    # print(fileContents)
                     # print(os.path.getsize("./www"+filename))
-                    print(path)
+                    # print(path)
 
-                    
+                    # make the response string
                     response = self.OKSTATUS + "Content-Type: text/"+contentType+"\r\nContent-Disposition: inline\r\nContent-Length: " + str(len(fileContents))+"\r\n"
                     response += str(fileContents)
-                    print(response)
+                    # print(response)
                     print("sending ok")
                     #bytearray(self.OKSTATUS + "Content-Type: text/"+contentType+"\r\n\r\n" + str(fileContents),'utf-8')
         
