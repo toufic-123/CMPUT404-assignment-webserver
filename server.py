@@ -58,12 +58,12 @@ class MyWebServer(socketserver.BaseRequestHandler):
     def readFileContents(self, path):
         
         file = open(path, "r")
-        while True:
+        with open(path, 'r') as file:
             bytesRead = file.read()
-            # print(bytesRead)
-            if not bytesRead:
-                break
-        return bytearray(bytesRead, 'utf-8')
+        print("error--------------------------------")
+        print(bytesRead)
+        print(type(bytesRead))
+        return bytesRead
             
 
     def handle(self):
@@ -95,7 +95,7 @@ class MyWebServer(socketserver.BaseRequestHandler):
                 # check if is is a directory and does not end in /
                 
             
-                            
+                print(current_directory + "/www" + filename)  
                 # check for a valid path
                 if (self.checkPath(current_directory + "/www" + filename)):
                     path = current_directory + "/www" + filename
@@ -103,12 +103,14 @@ class MyWebServer(socketserver.BaseRequestHandler):
                     # if root directory then redirect to index.html
                     if (path.endswith("/") and self.checkPath(path + "index.html")):
                         path += "index.html"
+                        print(path)
                     elif (not path.endswith("/") and os.path.isdir(path)):
                     # send 301 response code with new location header
                         print("sending 301")
                         self.request.sendall(bytearray(self.MOVEDSTATUS,'utf-8'))
                         return
 
+                    print(path[-1])
                     contentType = ""
                     if (path.endswith(".css")):
                         contentType = "css"
@@ -118,12 +120,18 @@ class MyWebServer(socketserver.BaseRequestHandler):
                         self.request.sendall(bytearray(self.NOTFOUNDSTATUS,'utf-8'))
                         return
                     fileContents = self.readFileContents(path)
+                    print(fileContents)
                     # print(os.path.getsize("./www"+filename))
                     print(path)
 
-
+                    
+                    response = self.OKSTATUS + "Content-Type: text/"+contentType+"\r\nContent-Disposition: inline\r\nContent-Length: " + str(len(fileContents))+"\r\n"
+                    response += str(fileContents)
+                    print(response)
                     print("sending ok")
-                    self.request.sendall(bytearray(self.OKSTATUS + "Content-Type: text/"+contentType+"\r\n\r\n" + str(fileContents),'utf-8'))
+                    #bytearray(self.OKSTATUS + "Content-Type: text/"+contentType+"\r\n\r\n" + str(fileContents),'utf-8')
+        
+                    self.request.sendall(response.encode("utf-8"))
                 else:
                     print("sending 404")
                     self.request.sendall(bytearray(self.NOTFOUNDSTATUS,'utf-8'))
