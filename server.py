@@ -67,63 +67,66 @@ class MyWebServer(socketserver.BaseRequestHandler):
             
 
     def handle(self):
-
-        currentDir = os.path.abspath(__file__)
-
-        
-        current_directory = os.path.dirname(currentDir)
-        
-       
-
-        # print(currentDir)
-        self.data = self.request.recv(1024).strip()
-        print ("Got a request of: %s\n" % self.data)
-        
-        # get the request method
-        splitRequest = self.splitRequest(self.data)
-        requestMethod = splitRequest[0]
-        print(splitRequest)
-
-        # check for get request
-        if requestMethod == "GET":
-            # print(requestMethod)
+        try:
+            currentDir = os.path.abspath(__file__)
 
             
-            # get the file name
-            filename = str(splitRequest[1])
-
-            # check if is is a directory and does not end in /
+            current_directory = os.path.dirname(currentDir)
             
-           
-                        
-            # check for a valid path
-            if (self.checkPath(current_directory + "/www" + filename)):
-                path = current_directory + "/www" + filename
+        
 
-                # if root directory then redirect to index.html
-                if (path.endswith("/") and self.checkPath(path + "index.html")):
-                    path += "index.html"
-                elif (not path.endswith("/") and os.path.isdir(path)):
-                # send 301 response code with new location header
-                    self.request.sendall(bytearray(self.MOVEDSTATUS,'utf-8'))
-                    return
+            # print(currentDir)
+            self.data = self.request.recv(1024).strip()
+            print ("Got a request of: %s\n" % self.data)
+            
+            # get the request method
+            splitRequest = self.splitRequest(self.data)
+            requestMethod = splitRequest[0]
+            print(splitRequest)
 
-                contentType = ""
-                if (path.endswith(".css")):
-                    contentType = "css"
-                elif (path.endswith(".html")):
-                    contentType = "html"
+            # check for get request
+            if requestMethod == "GET":
+                # print(requestMethod)
+
                 
-                fileContents = self.readFileContents(path)
-                # print(os.path.getsize("./www"+filename))
-            
-                self.request.sendall(bytearray(self.OKSTATUS + "Content-Type: text/"+contentType+"\r\n\r\n" + str(fileContents),'utf-8'))
-            else:
-                self.request.sendall(bytearray(self.NOTFOUNDSTATUS,'utf-8'))
-                
+                # get the file name
+                filename = str(splitRequest[1])
 
-        else :  
-            self.request.sendall(bytearray(self.NOTALLOWEDSTATUS,'utf-8'))
+                # check if is is a directory and does not end in /
+                
+            
+                            
+                # check for a valid path
+                if (self.checkPath(current_directory + "/www" + filename)):
+                    path = current_directory + "/www" + filename
+
+                    # if root directory then redirect to index.html
+                    if (path.endswith("/") and self.checkPath(path + "index.html")):
+                        path += "index.html"
+                    elif (not path.endswith("/") and os.path.isdir(path)):
+                    # send 301 response code with new location header
+                        self.request.sendall(bytearray(self.MOVEDSTATUS,'utf-8'))
+                        return
+
+                    contentType = ""
+                    if (path.endswith(".css")):
+                        contentType = "css"
+                    elif (path.endswith(".html")):
+                        contentType = "html"
+                    
+                    fileContents = self.readFileContents(path)
+                    # print(os.path.getsize("./www"+filename))
+                
+                    self.request.sendall(bytearray(self.OKSTATUS + "Content-Type: text/"+contentType+"\r\n\r\n" + str(fileContents),'utf-8'))
+                else:
+                    self.request.sendall(bytearray(self.NOTFOUNDSTATUS,'utf-8'))
+                    
+
+            else :  
+                self.request.sendall(bytearray(self.NOTALLOWEDSTATUS,'utf-8'))
+
+        except:
+            self.request.sendall(bytearray(self.NOTFOUNDSTATUS,'utf-8'))
 
 if __name__ == "__main__":
     HOST, PORT = "localhost", 8080
