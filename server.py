@@ -45,8 +45,8 @@ class MyWebServer(socketserver.BaseRequestHandler):
     
 
     def checkPath(self, path):
-        print(os.path.isdir(path))
-        print(os.path.isfile(path))
+        # print(os.path.isdir(path))
+        # print(os.path.isfile(path))
         return os.path.exists(path)
     
 
@@ -60,7 +60,7 @@ class MyWebServer(socketserver.BaseRequestHandler):
         file = open(path, "r")
         while True:
             bytesRead = file.read()
-            print(bytesRead)
+            # print(bytesRead)
             if not bytesRead:
                 break
         return bytearray(bytesRead, 'utf-8')
@@ -105,6 +105,7 @@ class MyWebServer(socketserver.BaseRequestHandler):
                         path += "index.html"
                     elif (not path.endswith("/") and os.path.isdir(path)):
                     # send 301 response code with new location header
+                        print("sending 301")
                         self.request.sendall(bytearray(self.MOVEDSTATUS,'utf-8'))
                         return
 
@@ -113,19 +114,26 @@ class MyWebServer(socketserver.BaseRequestHandler):
                         contentType = "css"
                     elif (path.endswith(".html")):
                         contentType = "html"
-                    
+                    else:
+                        self.request.sendall(bytearray(self.NOTFOUNDSTATUS,'utf-8'))
+                        return
                     fileContents = self.readFileContents(path)
                     # print(os.path.getsize("./www"+filename))
-                
+                    print(path)
+
+
+                    print("sending ok")
                     self.request.sendall(bytearray(self.OKSTATUS + "Content-Type: text/"+contentType+"\r\n\r\n" + str(fileContents),'utf-8'))
                 else:
+                    print("sending 404")
                     self.request.sendall(bytearray(self.NOTFOUNDSTATUS,'utf-8'))
                     
 
             else :  
                 self.request.sendall(bytearray(self.NOTALLOWEDSTATUS,'utf-8'))
 
-        except:
+        except Exception:
+            print("EXCEPTION")
             self.request.sendall(bytearray(self.NOTFOUNDSTATUS,'utf-8'))
 
 if __name__ == "__main__":

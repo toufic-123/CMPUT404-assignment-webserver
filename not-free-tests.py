@@ -51,7 +51,7 @@ class TestYourWebserver(unittest.TestCase):
             self.assertTrue( e.getcode()  == 404 , ("404 Not FOUND! %d" % e.getcode()))
         else:
             self.assertTrue( False, "Another Error was thrown!")
-
+    
     def test_get_group(self):
         """ how secure are you? """
         url = self.baseurl + "/../../../../../../../../../../../../etc/group"
@@ -62,7 +62,7 @@ class TestYourWebserver(unittest.TestCase):
             self.assertTrue( e.getcode()  == 404 , ("404 Not FOUND! %d" % e.getcode()))
         else:
             self.assertTrue( False, "Another Error was thrown!")
-
+    
     def test_css(self):
         url = self.baseurl + "/base.css"
         req = request.urlopen(url, None, 3)
@@ -128,6 +128,6 @@ class TestYourWebserver(unittest.TestCase):
             self.assertTrue( e.getcode()  == 404 , ("404 Not FOUND! %d" % e.getcode()))
         else:
             self.assertTrue( False, "Another Error was thrown!")
-    
+        
 if __name__ == '__main__':
     unittest.main()
