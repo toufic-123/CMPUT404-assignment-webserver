@@ -67,6 +67,15 @@ class MyWebServer(socketserver.BaseRequestHandler):
             
 
     def handle(self):
+
+        currentDir = os.path.abspath(__file__)
+
+        
+        current_directory = os.path.dirname(currentDir)
+        
+       
+
+        # print(currentDir)
         self.data = self.request.recv(1024).strip()
         print ("Got a request of: %s\n" % self.data)
         
@@ -88,8 +97,8 @@ class MyWebServer(socketserver.BaseRequestHandler):
            
                         
             # check for a valid path
-            if (self.checkPath("./www" + filename)):
-                path = "./www" + filename
+            if (self.checkPath(current_directory + "/www" + filename)):
+                path = current_directory + "/www" + filename
 
                 # if root directory then redirect to index.html
                 if (path.endswith("/") and self.checkPath(path + "index.html")):
@@ -99,6 +108,7 @@ class MyWebServer(socketserver.BaseRequestHandler):
                     self.request.sendall(bytearray(self.MOVEDSTATUS,'utf-8'))
                     return
 
+                contentType = ""
                 if (path.endswith(".css")):
                     contentType = "css"
                 elif (path.endswith(".html")):
