@@ -45,9 +45,15 @@ class MyWebServer(socketserver.BaseRequestHandler):
     
 
     def checkPath(self, path):
-        print(os.path.exists(path))
+        print(os.path.isdir(path))
+        print(os.path.isfile(path))
         return os.path.exists(path)
     
+
+    # returns true if it is a file and false if it is a file
+    def isDirOrFile(self, path):
+        return os.path.isfile(path)
+
 
     def readFileContents(self, path):
         
@@ -77,6 +83,10 @@ class MyWebServer(socketserver.BaseRequestHandler):
             # get the file name
             filename = str(splitRequest[1])
 
+            # check if is is a directory and does not end in /
+            
+           
+                        
             # check for a valid path
             if (self.checkPath("./www" + filename)):
                 path = "./www" + filename
@@ -84,7 +94,11 @@ class MyWebServer(socketserver.BaseRequestHandler):
                 # if root directory then redirect to index.html
                 if (path.endswith("/") and self.checkPath(path + "index.html")):
                     path += "index.html"
-                
+                elif (not path.endswith("/") and os.path.isdir(path)):
+                # send 301 response code with new location header
+                    self.request.sendall(bytearray(self.MOVEDSTATUS,'utf-8'))
+                    return
+
                 if (path.endswith(".css")):
                     contentType = "css"
                 elif (path.endswith(".html")):
@@ -96,7 +110,10 @@ class MyWebServer(socketserver.BaseRequestHandler):
                 self.request.sendall(bytearray(self.OKSTATUS + "Content-Type: text/"+contentType+"\r\n\r\n" + str(fileContents),'utf-8'))
             else:
                 self.request.sendall(bytearray(self.NOTFOUNDSTATUS,'utf-8'))
+                
 
+        else :  
+            self.request.sendall(bytearray(self.NOTALLOWEDSTATUS,'utf-8'))
 
 if __name__ == "__main__":
     HOST, PORT = "localhost", 8080
