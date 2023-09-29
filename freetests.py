@@ -24,7 +24,7 @@ class TestYourWebserver(unittest.TestCase):
     def setUp(self,baseurl=BASEURL):
         """do nothing"""
         self.baseurl = baseurl
-
+    
     def test_css(self):
         url = self.baseurl + "/base.css"
         req = request.urlopen(url, None, 3)
